@@ -2,7 +2,7 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ScreenShooter.Web", "src\ScreenShooter.Web\ScreenShooter.Web.csproj", "{275C7A3B-20A2-4A05-AA95-BC0860A88748}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ScreenShooter.Gun", "ScreenShooter.Gun\ScreenShooter.Gun.csproj", "{5E03F3EC-EC59-427E-A99D-79C84C8048A4}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ScreenShooter.Gun", "src\ScreenShooter.Gun\ScreenShooter.Gun.csproj", "{5E03F3EC-EC59-427E-A99D-79C84C8048A4}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
