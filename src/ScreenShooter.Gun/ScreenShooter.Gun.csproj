@@ -3,6 +3,14 @@
     <PropertyGroup>
         <TargetFramework>netcoreapp2.1</TargetFramework>
         <LangVersion>7.1</LangVersion>
+        <Authors>d2funlife</Authors>
+        <PackageId>ScreenShooterGun</PackageId>
+        <Product>ScreenShooterGun</Product>
+        <Description>Create full web page screenshot. Take web page as pdf.</Description>
+        <PackageProjectUrl></PackageProjectUrl>
+        <RepositoryUrl>https://github.com/d2funlife/screenshooter</RepositoryUrl>
+        <RepositoryType />
+        <PackageTags>pdf img screenshot selenium itext</PackageTags>
     </PropertyGroup>
 
     <ItemGroup>
