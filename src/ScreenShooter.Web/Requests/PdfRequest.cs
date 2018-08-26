@@ -19,9 +19,6 @@ namespace ScreenShooter.Web.Requests
 
         [FromQuery(Name = "f")]
         public String Format { get; set; }
-
-        [FromQuery(Name = "full")]
-        public Boolean IsFullPage { get; set; }
         
         [FromQuery(Name = "g")]
         public Boolean IsGrayscale { get; set; }
@@ -34,10 +31,9 @@ namespace ScreenShooter.Web.Requests
             return new ShotOptions
                    {
                        Uri = new Uri(Url),
-                       Height = Height,
+                       StepHeight = Height,
                        Width = Width,
                        ImageFormat = Format,
-                       IsFullPage = IsFullPage,
                        IsGrayscale = IsGrayscale,
                        TryMobile = TryMobileVersion
                    };

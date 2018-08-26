@@ -78,22 +78,22 @@ namespace ScreenShooter.Gun
                 magicImage.Contrast();
             }
 
-            var partsCount = Math.Ceiling((Decimal) magicImage.Height / options.Height);
-            partsCount = Math.Ceiling((magicImage.Height + options.OverlaySize * partsCount) / options.Height);
+            var partsCount = Math.Ceiling((Decimal) magicImage.Height / options.StepHeight);
+            partsCount = Math.Ceiling((magicImage.Height + options.OverlaySize * partsCount) / options.StepHeight);
 
             var pageImageParts = new List<IMagickImage>();
             for (var i = 0; i < partsCount; i++)
             {
-                var y = i * options.Height - i * options.OverlaySize;
+                var y = i * options.StepHeight - i * options.OverlaySize;
                 var images = magicImage.CropToTiles(new MagickGeometry(0,
                                                                        y,
                                                                        options.Width,
-                                                                       options.Height))
+                                                                       options.StepHeight))
                                        .ToList();
                 pageImageParts.Add(images.First());
             }
 
-            var document = new Document(new iTextSharp.text.Rectangle(options.Width, options.Height), 0, 0, 0, 0);
+            var document = new Document(new iTextSharp.text.Rectangle(options.Width, options.StepHeight), 0, 0, 0, 0);
 
             Byte[] documentBytes;
             using (var documentStream = new MemoryStream())
@@ -104,7 +104,7 @@ namespace ScreenShooter.Gun
                 foreach (var pageImagePart in pageImageParts)
                 {
                     document.NewPage();
-                    var imageDocument = new Document(new iTextSharp.text.Rectangle(options.Width, options.Height), 0, 0, 0, 0);
+                    var imageDocument = new Document(new iTextSharp.text.Rectangle(options.Width, options.StepHeight), 0, 0, 0, 0);
 
                     using (var imageStream = new MemoryStream())
                     {
@@ -118,7 +118,7 @@ namespace ScreenShooter.Gun
                         var image = iTextSharp.text.Image.GetInstance(pageImagePart.ToByteArray());
                         image.Alignment = Element.ALIGN_TOP;
                         image.ScaleToFitHeight = true;
-                        image.ScaleToFit(options.Width, options.Height);
+                        image.ScaleToFit(options.Width, options.StepHeight);
 
                         if (!imageDocument.Add(image))
                         {
@@ -150,7 +150,7 @@ namespace ScreenShooter.Gun
         {
             var driver = (IWebDriver) _remoteWebDriver;
             driver.Manage().Window.Size = new Size(options.Width + ScrollWidthOffset,
-                                                   options.Height + MenuHeightOffset);
+                                                   options.StepHeight + MenuHeightOffset);
             driver.Manage().Window.Position = new Point(0, 0);
             var jsExecutor = (IJavaScriptExecutor) driver;
 

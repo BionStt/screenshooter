@@ -14,14 +14,8 @@ namespace ScreenShooter.Web.Requests
         [FromQuery(Name = "w")]
         public Int32 Width { get; set; }
 
-        [FromQuery(Name = "h")]
-        public Int32 Height { get; set; }
-
         [FromQuery(Name = "f")]
         public String Format { get; set; }
-
-        [FromQuery(Name = "full")]
-        public Boolean IsFullPage { get; set; }
 
         [FromQuery(Name = "m")]
         public Boolean TryMobileVersion { get; set; }
@@ -31,10 +25,9 @@ namespace ScreenShooter.Web.Requests
             return new ShotOptions
                    {
                        Uri = new Uri(Url),
-                       Height = Height,
+                       StepHeight = 500,
                        Width = Width,
                        ImageFormat = Format,
-                       IsFullPage = IsFullPage,
                        TryMobile = TryMobileVersion
                    };
         }
