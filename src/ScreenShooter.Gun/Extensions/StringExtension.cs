@@ -65,6 +65,8 @@ namespace ScreenShooter.Gun.Extensions
                                                                    {'/', String.Empty},
                                                                    {'|', String.Empty},
                                                                    {'^', String.Empty},
+                                                                   {'»', String.Empty},
+                                                                   {'«', String.Empty},
                                                                };
 
 

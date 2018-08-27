@@ -11,6 +11,7 @@
         <RepositoryUrl>https://github.com/d2funlife/screenshooter</RepositoryUrl>
         <RepositoryType />
         <PackageTags>pdf img screenshot selenium itext</PackageTags>
+        <Version>1.0.0.1</Version>
     </PropertyGroup>
 
     <ItemGroup>
