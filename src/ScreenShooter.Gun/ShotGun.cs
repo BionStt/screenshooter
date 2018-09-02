@@ -249,12 +249,19 @@ namespace ScreenShooter.Gun
             uriBuilder.Host = $"m.{options.Uri.Host}";
             var mobileUrl = uriBuilder.Uri.OriginalString;
 
-            var client = _httpClientFactory.CreateClient();
-            var result = await client.GetAsync(mobileUrl, cancel);
+            try
+            {
+                var client = _httpClientFactory.CreateClient();
+                var result = await client.GetAsync(mobileUrl, cancel);
 
-            return result.IsSuccessStatusCode
-                       ? mobileUrl
-                       : options.Uri.OriginalString;
+                return result.IsSuccessStatusCode
+                           ? mobileUrl
+                           : options.Uri.OriginalString;
+            }
+            catch (Exception exception)
+            {
+                return options.Uri.OriginalString;
+            }
         }
     }
 }
