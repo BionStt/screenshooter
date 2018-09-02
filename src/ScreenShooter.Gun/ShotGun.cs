@@ -42,6 +42,7 @@ namespace ScreenShooter.Gun
 
             var driver = new RemoteWebDriver(new Uri(_options.Host), new ChromeOptions());
             driver.Navigate().GoToUrl(url);
+            var title = driver.Title;
 
             var fullPageImage = GetFullPageImage(driver, options);
 
@@ -51,7 +52,7 @@ namespace ScreenShooter.Gun
                 return null;
             }
 
-            return new ImageShot(fullPageImage, driver.Title, options.ImageFormat);
+            return new ImageShot(fullPageImage, title, options.ImageFormat);
         }
 
         public async Task<ShotResult> ShotPdfAsync(ShotOptions options,
@@ -59,9 +60,8 @@ namespace ScreenShooter.Gun
         {
             var url = await TryGetMobileVersionAsync(options, cancel);
             var driver = new RemoteWebDriver(new Uri(_options.Host), new ChromeOptions());
-            var title = driver.Title;
-
             driver.Navigate().GoToUrl(url);
+            var title = driver.Title;
 
             var fullPageImage = GetFullPageImage(driver, options);
 

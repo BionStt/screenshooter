@@ -23,7 +23,7 @@ namespace ScreenShooter.Web
         {
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
             services.AddTransient(provider => new ShotGun(provider.GetService<IHttpClientFactory>(),
-                                                                   new GunOptions("http://localhost:4444/wd/hub")));
+                                                                   new GunOptions("http://192.168.0.11:8103/wd/hub")));
             services.AddHttpClient();
         }
 
