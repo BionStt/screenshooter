@@ -19,44 +19,53 @@ using Rectangle = System.Drawing.Rectangle;
 
 namespace ScreenShooter.Gun
 {
-    public class ShotGun : IDisposable
+    public class ShotGun
     {
         private const Int32 ScrollWidthOffset = 15;
         private const Int32 MenuHeightOffset = 110;
 
-        private readonly RemoteWebDriver _remoteWebDriver;
+
         private readonly IHttpClientFactory _httpClientFactory;
+        private readonly GunOptions _options;
 
 
         public ShotGun(IHttpClientFactory httpClientFactory, GunOptions options)
         {
             _httpClientFactory = httpClientFactory;
-            _remoteWebDriver = new RemoteWebDriver(new Uri(options.Host),
-                                                   new ChromeOptions());
+            _options = options;
         }
 
         public async Task<ImageShot> ShotImageAsync(ShotOptions options,
                                                     CancellationToken cancel = default)
         {
             var url = await TryGetMobileVersionAsync(options, cancel);
-            _remoteWebDriver.Navigate().GoToUrl(url);
-            
-            var fullPageImage = GetFullPageImage(options);
+
+            var driver = new RemoteWebDriver(new Uri(_options.Host), new ChromeOptions());
+            driver.Navigate().GoToUrl(url);
+
+            var fullPageImage = GetFullPageImage(driver, options);
+
+            driver.Close();
             if (fullPageImage == null)
             {
                 return null;
             }
 
-            return new ImageShot(fullPageImage, _remoteWebDriver.Title, options.ImageFormat);
+            return new ImageShot(fullPageImage, driver.Title, options.ImageFormat);
         }
 
         public async Task<ShotResult> ShotPdfAsync(ShotOptions options,
                                                    CancellationToken cancel = default)
         {
             var url = await TryGetMobileVersionAsync(options, cancel);
-            _remoteWebDriver.Navigate().GoToUrl(url);
+            var driver = new RemoteWebDriver(new Uri(_options.Host), new ChromeOptions());
+            var title = driver.Title;
 
-            var fullPageImage = GetFullPageImage(options);
+            driver.Navigate().GoToUrl(url);
+
+            var fullPageImage = GetFullPageImage(driver, options);
+
+            driver.Close();
 
             if (fullPageImage == null ||
                 cancel.IsCancellationRequested)
@@ -64,10 +73,10 @@ namespace ScreenShooter.Gun
                 return null;
             }
 
-            return GetPdfDocument(fullPageImage, options);
+            return GetPdfDocument(fullPageImage, options, title);
         }
 
-        private PdfShot GetPdfDocument(Image fullPageImage, ShotOptions options)
+        private PdfShot GetPdfDocument(Image fullPageImage, ShotOptions options, String title)
         {
             var magicImage = new MagickImage(fullPageImage.ToMemoryStream());
             magicImage.Strip();
@@ -143,12 +152,12 @@ namespace ScreenShooter.Gun
                 documentBytes = documentStream.ToArray();
             }
 
-            return new PdfShot(documentBytes, _remoteWebDriver.Title);
+            return new PdfShot(documentBytes, title);
         }
 
-        private Image GetFullPageImage(ShotOptions options)
+        private Image GetFullPageImage(RemoteWebDriver remoteWebDriver, ShotOptions options)
         {
-            var driver = (IWebDriver) _remoteWebDriver;
+            var driver = (IWebDriver) remoteWebDriver;
             driver.Manage().Window.Size = new Size(options.Width + ScrollWidthOffset,
                                                    options.StepHeight + MenuHeightOffset);
             driver.Manage().Window.Position = new Point(0, 0);
@@ -246,12 +255,6 @@ namespace ScreenShooter.Gun
             return result.IsSuccessStatusCode
                        ? mobileUrl
                        : options.Uri.OriginalString;
-        }
-
-        public void Dispose()
-        {
-            _remoteWebDriver?.Quit();
-            _remoteWebDriver?.Dispose();
         }
     }
 }
