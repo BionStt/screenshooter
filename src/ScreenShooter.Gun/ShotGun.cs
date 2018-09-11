@@ -173,10 +173,10 @@ namespace ScreenShooter.Gun
 
         private String GetFileName(String title)
         {
-            var regex = new Regex(@"([^\p{L}\s\d\-_~,;:\[\]\(\).'])");
+            var regex = new Regex(@"[-_~,;:']");
             var fileName = regex.Replace(title, String.Empty);
             
-            var regexSpaces = new Regex(@"[ \t]{2,}");
+            var regexSpaces = new Regex(@"\s{2,}");
             return regexSpaces.Replace(fileName, " ");
         }
 
