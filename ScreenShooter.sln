@@ -4,6 +4,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ScreenShooter.Web", "src\Sc
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ScreenShooter.Gun", "src\ScreenShooter.Gun\ScreenShooter.Gun.csproj", "{5E03F3EC-EC59-427E-A99D-79C84C8048A4}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ScreenShooter.LinkCollector", "src\ScreenShooter.LinkCollector\ScreenShooter.LinkCollector.csproj", "{ABD1AC9F-0B80-43DF-BFA5-EF0F799C8E98}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -18,5 +20,9 @@ Global
 		{5E03F3EC-EC59-427E-A99D-79C84C8048A4}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{5E03F3EC-EC59-427E-A99D-79C84C8048A4}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{5E03F3EC-EC59-427E-A99D-79C84C8048A4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{ABD1AC9F-0B80-43DF-BFA5-EF0F799C8E98}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{ABD1AC9F-0B80-43DF-BFA5-EF0F799C8E98}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{ABD1AC9F-0B80-43DF-BFA5-EF0F799C8E98}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{ABD1AC9F-0B80-43DF-BFA5-EF0F799C8E98}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
