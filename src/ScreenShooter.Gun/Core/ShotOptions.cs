@@ -10,6 +10,7 @@ namespace ScreenShooter.Gun.Core
             StepHeight = 1024;
             Width = 754;
             ImageFormat = "png";
+            HideOverlayElementsImmediate = true;
         }
 
         public Uri Uri { get; set; }
@@ -19,5 +20,6 @@ namespace ScreenShooter.Gun.Core
         public Int32 OverlaySize { get; set; }
         public String ImageFormat { get; set; }
         public Boolean IsGrayscale { get; set; }
+        public Boolean HideOverlayElementsImmediate { get; set; }
     }
 }

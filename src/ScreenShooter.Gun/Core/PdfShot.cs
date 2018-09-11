@@ -9,7 +9,7 @@ namespace ScreenShooter.Gun.Core
         {
             Bytes = bytes;
             MimeType = "application/pdf";
-            FileName = $"{title.ToLowerInvariant().ToUrlStandard()}.pdf";
+            FileName = $"{title}.pdf";
         }
     }
 }
