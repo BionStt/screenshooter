@@ -69,11 +69,11 @@ namespace ScreenShooter.LinkCollector
 
             var options = new ShotOptions
                           {
-                              Width = 754,
-                              StepHeight = 1024,
+                              Width = 1024,
+                              StepHeight = 754,
                               ImageFormat = "png",
                               IsGrayscale = true,
-                              OverlaySize = 20,
+                              OverlaySize = 23,
                               TryMobile = true,
                               HideOverlayElementsImmediate = true
                           };
