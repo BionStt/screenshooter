@@ -175,41 +175,50 @@ namespace ScreenShooter.Gun
         {
             var regex = new Regex(@"([^\p{L}\s\d\-_\[\]\(\).'])");
             var fileName = regex.Replace(title, String.Empty);
-            
+
             var regexSpaces = new Regex(@"\s{2,}");
             return regexSpaces.Replace(fileName, " ");
+        }
+
+        private void ResizeBrowser(IWebDriver driver, Int32 width, Int32 height)
+        {
+            driver.Manage().Window.Size = new Size(width, height);
+            driver.Manage().Window.Position = new Point(0, 0);
         }
 
         private Image GetFullPageImage(RemoteWebDriver remoteWebDriver, ShotOptions options)
         {
             var driver = (IWebDriver) remoteWebDriver;
-            driver.Manage().Window.Size = new Size(options.Width + ScrollWidthOffset,
-                                                   options.StepHeight + MenuHeightOffset);
-            driver.Manage().Window.Position = new Point(0, 0);
+
+            ResizeBrowser(driver,
+                          options.Width + ScrollWidthOffset,
+                          options.StepHeight + MenuHeightOffset);
 
             var jsExecutor = (IJavaScriptExecutor) driver;
 
             LoadAllPageHeight(jsExecutor);
 
             var totalHeight = (Int32) (Int64) jsExecutor.ExecuteScript("return document.body.parentNode.scrollHeight");
+            var totalWidth = (Int32) (Int64) jsExecutor.ExecuteScript("return document.body.parentNode.scrollWidth");
             var viewportWidth = (Int32) (Int64) jsExecutor.ExecuteScript("return document.body.clientWidth");
             var viewportHeight = (Int32) (Int64) jsExecutor.ExecuteScript("return window.innerHeight");
+
+            if (totalWidth > viewportWidth)
+            {
+                ResizeBrowser(driver,
+                              options.Width + ScrollWidthOffset,
+                              options.StepHeight + MenuHeightOffset + ScrollWidthOffset);
+            }
 
             var rectangles = new List<Rectangle>();
             for (var yScroll = 0; yScroll < totalHeight; yScroll += viewportHeight)
             {
-                var rectangleHeight = viewportHeight;
-                if (yScroll + viewportHeight > totalHeight)
-                {
-                    rectangleHeight = totalHeight - yScroll;
-                }
-
-                var currRect = new Rectangle(0, yScroll, viewportWidth, rectangleHeight);
+                var currRect = new Rectangle(0, yScroll, options.Width, options.StepHeight);
                 rectangles.Add(currRect);
             }
 
             var takerScreenshot = (ITakesScreenshot) driver;
-            var fullPageImage = new Bitmap(viewportWidth, totalHeight);
+            var fullPageImage = new Bitmap(options.Width, totalHeight);
             var graphics = Graphics.FromImage(fullPageImage);
 
             var yPosition = 0;
@@ -286,7 +295,7 @@ namespace ScreenShooter.Gun
                            ? mobileUrl
                            : options.Uri.OriginalString;
             }
-            catch (Exception exception)
+            catch (Exception)
             {
                 return options.Uri.OriginalString;
             }
