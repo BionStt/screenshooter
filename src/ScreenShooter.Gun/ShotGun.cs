@@ -213,7 +213,13 @@ namespace ScreenShooter.Gun
             var rectangles = new List<Rectangle>();
             for (var yScroll = 0; yScroll < totalHeight; yScroll += viewportHeight)
             {
-                var currRect = new Rectangle(0, yScroll, options.Width, options.StepHeight);
+                var rectangleHeight = viewportHeight;
+                if (yScroll + viewportHeight > totalHeight)
+                {
+                    rectangleHeight = totalHeight - yScroll;
+                }
+                
+                var currRect = new Rectangle(0, yScroll, options.Width, rectangleHeight);
                 rectangles.Add(currRect);
             }
 
