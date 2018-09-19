@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using ScreenShooter.Gun;
 using ScreenShooter.Gun.Core;
+using ScreenShooter.Gun.Pdf.ITextSharp;
 
 namespace ScreenShooter.LinkCollector
 {
@@ -47,6 +48,7 @@ namespace ScreenShooter.LinkCollector
 
             var service = new ServiceCollection().AddHttpClient().BuildServiceProvider();
             var gun = new ShotGun(service.GetService<IHttpClientFactory>(),
+                                  new PdfCreator(), 
                                   new GunOptions($"{seleniumHost}/wd/hub"));
 
 

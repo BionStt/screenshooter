@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>netcoreapp2.1</TargetFramework>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\ScreenShooter.Gun.Pdf.Contracts\ScreenShooter.Gun.Pdf.Contracts.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <PackageReference Include="iTextSharp">
+        <Version>5.5.13</Version>
+      </PackageReference>
+    </ItemGroup>
+
+</Project>

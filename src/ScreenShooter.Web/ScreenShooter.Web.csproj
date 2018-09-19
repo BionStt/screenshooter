@@ -29,6 +29,7 @@
     </ItemGroup>
 
     <ItemGroup>
+      <ProjectReference Include="..\ScreenShooter.Gun.Pdf.ITextSharp\ScreenShooter.Gun.Pdf.ITextSharp.csproj" />
       <ProjectReference Include="..\ScreenShooter.Gun\ScreenShooter.Gun.csproj" />
     </ItemGroup>
 </Project>

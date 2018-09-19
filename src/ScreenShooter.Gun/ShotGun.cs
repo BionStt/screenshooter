@@ -7,14 +7,13 @@ using System.Net.Http;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
-using iTextSharp.text;
-using iTextSharp.text.pdf;
 using ImageMagick;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Chrome;
 using OpenQA.Selenium.Remote;
 using ScreenShooter.Gun.Core;
 using ScreenShooter.Gun.Extensions;
+using ScreenShooter.Gun.Pdf.Contracts;
 using Image = System.Drawing.Image;
 using Rectangle = System.Drawing.Rectangle;
 
@@ -26,11 +25,15 @@ namespace ScreenShooter.Gun
         private const Int32 MenuHeightOffset = 110;
 
         private readonly IHttpClientFactory _httpClientFactory;
+        private readonly IPdfCreator _pdfCreator;
         private readonly GunOptions _options;
 
-        public ShotGun(IHttpClientFactory httpClientFactory, GunOptions options)
+        public ShotGun(IHttpClientFactory httpClientFactory,
+                       IPdfCreator pdfCreator,
+                       GunOptions options)
         {
             _httpClientFactory = httpClientFactory;
+            _pdfCreator = pdfCreator;
             _options = options;
         }
 
@@ -105,7 +108,7 @@ namespace ScreenShooter.Gun
             var partsCount = Math.Ceiling((Decimal) magicImage.Height / options.StepHeight);
             partsCount = Math.Ceiling((magicImage.Height + options.OverlaySize * partsCount) / options.StepHeight);
 
-            var pageImageParts = new List<IMagickImage>();
+            var pageImageParts = new List<Byte[]>();
             for (var i = 0; i < partsCount; i++)
             {
                 var y = i * options.StepHeight - i * options.OverlaySize;
@@ -114,61 +117,12 @@ namespace ScreenShooter.Gun
                                                                        options.Width,
                                                                        options.StepHeight))
                                        .ToList();
-                pageImageParts.Add(images.First());
+                pageImageParts.Add(images.First().ToByteArray());
             }
 
-            var document = new Document(new iTextSharp.text.Rectangle(options.Width, options.StepHeight), 0, 0, 0, 0);
-            document.AddTitle(title);
+            var pdfBytes = _pdfCreator.CreateDocument(options.Width, options.StepHeight, pageImageParts);
 
-            Byte[] documentBytes;
-            using (var documentStream = new MemoryStream())
-            {
-                var pdf = new PdfCopy(document, documentStream);
-                document.Open();
-
-                foreach (var pageImagePart in pageImageParts)
-                {
-                    document.NewPage();
-                    var imageDocument = new Document(new iTextSharp.text.Rectangle(options.Width, options.StepHeight), 0, 0, 0, 0);
-
-                    using (var imageStream = new MemoryStream())
-                    {
-                        var imageDocumentWriter = PdfWriter.GetInstance(imageDocument, imageStream);
-                        imageDocument.Open();
-                        if (!imageDocument.NewPage())
-                        {
-                            throw new Exception("Unable add page");
-                        }
-
-                        var image = iTextSharp.text.Image.GetInstance(pageImagePart.ToByteArray());
-                        image.Alignment = Element.ALIGN_TOP;
-                        image.ScaleToFitHeight = true;
-                        image.ScaleToFit(options.Width, options.StepHeight);
-
-                        if (!imageDocument.Add(image))
-                        {
-                            throw new Exception("Unable add image");
-                        }
-
-                        imageDocument.Close();
-                        imageDocumentWriter.Close();
-
-                        var imageDocumentReader = new PdfReader(imageStream.ToArray());
-                        var page = pdf.GetImportedPage(imageDocumentReader, 1);
-                        pdf.AddPage(page);
-                        imageDocumentReader.Close();
-                    }
-                }
-
-                if (document.IsOpen())
-                {
-                    document.Close();
-                }
-
-                documentBytes = documentStream.ToArray();
-            }
-
-            return new PdfShot(documentBytes, GetFileName(title));
+            return new PdfShot(pdfBytes, GetFileName(title));
         }
 
         private String GetFileName(String title)
@@ -186,10 +140,8 @@ namespace ScreenShooter.Gun
             driver.Manage().Window.Position = new Point(0, 0);
         }
 
-        private Image GetFullPageImage(RemoteWebDriver remoteWebDriver, ShotOptions options)
+        private Image GetFullPageImage(IWebDriver driver, ShotOptions options)
         {
-            var driver = (IWebDriver) remoteWebDriver;
-
             ResizeBrowser(driver,
                           options.Width + ScrollWidthOffset,
                           options.StepHeight + MenuHeightOffset);
@@ -198,12 +150,8 @@ namespace ScreenShooter.Gun
 
             LoadAllPageHeight(jsExecutor);
 
-            var totalHeight = (Int32) (Int64) jsExecutor.ExecuteScript("return document.body.parentNode.scrollHeight");
-            var totalWidth = (Int32) (Int64) jsExecutor.ExecuteScript("return document.body.parentNode.scrollWidth");
-            var viewportWidth = (Int32) (Int64) jsExecutor.ExecuteScript("return document.body.clientWidth");
-            var viewportHeight = (Int32) (Int64) jsExecutor.ExecuteScript("return window.innerHeight");
-
-            if (totalWidth > viewportWidth)
+            var pageSizes = GetWebPageSizes(jsExecutor);
+            if (pageSizes.TotalWidth > pageSizes.ViewportWidth)
             {
                 ResizeBrowser(driver,
                               options.Width + ScrollWidthOffset,
@@ -211,20 +159,20 @@ namespace ScreenShooter.Gun
             }
 
             var rectangles = new List<Rectangle>();
-            for (var yScroll = 0; yScroll < totalHeight; yScroll += viewportHeight)
+            for (var yScroll = 0; yScroll < pageSizes.TotalHeight; yScroll += pageSizes.ViewportHeight)
             {
-                var rectangleHeight = viewportHeight;
-                if (yScroll + viewportHeight > totalHeight)
+                var rectangleHeight = pageSizes.ViewportHeight;
+                if (yScroll + pageSizes.ViewportHeight > pageSizes.TotalHeight)
                 {
-                    rectangleHeight = totalHeight - yScroll;
+                    rectangleHeight = pageSizes.TotalHeight - yScroll;
                 }
-                
+
                 var currRect = new Rectangle(0, yScroll, options.Width, rectangleHeight);
                 rectangles.Add(currRect);
             }
 
             var takerScreenshot = (ITakesScreenshot) driver;
-            var fullPageImage = new Bitmap(options.Width, totalHeight);
+            var fullPageImage = new Bitmap(options.Width, pageSizes.TotalHeight);
             var graphics = Graphics.FromImage(fullPageImage);
 
             var yPosition = 0;
@@ -235,7 +183,7 @@ namespace ScreenShooter.Gun
                 if (rectangleIndex > 0 ||
                     options.HideOverlayElementsImmediate)
                 {
-                    jsExecutor.ExecuteScript("(function(){x=document.querySelectorAll('*');for(i=0;i<x.length;i++){elementStyle=getComputedStyle(x[i]);if(elementStyle.position==\"fixed\"||elementStyle.position==\"sticky\"){x[i].style.opacity=\"0\";x[i].style.position=\"absolute\";x[i].style.left=\"-99999px\";}}}())");
+                    HideFloatingElements(jsExecutor);
                 }
 
                 var rectangle = rectangles[rectangleIndex];
@@ -243,7 +191,7 @@ namespace ScreenShooter.Gun
                 var screenshotImage = ScreenshotToImage(screenshot);
 
                 var sourceRectangle = new Rectangle(0,
-                                                    viewportHeight - rectangle.Height,
+                                                    pageSizes.ViewportHeight - rectangle.Height,
                                                     rectangle.Width,
                                                     rectangle.Height);
 
@@ -253,6 +201,27 @@ namespace ScreenShooter.Gun
             }
 
             return fullPageImage;
+        }
+
+        private WebPageSizes GetWebPageSizes(IJavaScriptExecutor jsExecutor)
+        {
+            var totalHeight = (Int32) (Int64) jsExecutor.ExecuteScript("return document.body.parentNode.scrollHeight");
+            var totalWidth = (Int32) (Int64) jsExecutor.ExecuteScript("return document.body.parentNode.scrollWidth");
+            var viewportWidth = (Int32) (Int64) jsExecutor.ExecuteScript("return document.body.clientWidth");
+            var viewportHeight = (Int32) (Int64) jsExecutor.ExecuteScript("return window.innerHeight");
+
+            return new WebPageSizes
+                   {
+                       TotalHeight = totalHeight,
+                       TotalWidth = totalWidth,
+                       ViewportWidth = viewportWidth,
+                       ViewportHeight = viewportHeight
+                   };
+        }
+
+        private void HideFloatingElements(IJavaScriptExecutor jsExecutor)
+        {
+            jsExecutor.ExecuteScript("(function(){x=document.querySelectorAll('*');for(i=0;i<x.length;i++){elementStyle=getComputedStyle(x[i]);if(elementStyle.position==\"fixed\"||elementStyle.position==\"sticky\"){x[i].style.opacity=\"0\";x[i].style.position=\"absolute\";x[i].style.left=\"-99999px\";}}}())");
         }
 
         private Image ScreenshotToImage(Screenshot screenshot)
